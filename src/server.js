@@ -25,7 +25,7 @@ app.get("/", async (req, res) => {
   res.send('Hello World');
 });
 
-app.get("/read", async (req, res) => {
+app.get("/api/read", async (req, res) => {
   try {
     const { filename } = req.query;
 
@@ -58,7 +58,7 @@ app.get("/read", async (req, res) => {
   }
 });
 
-app.post("/parse", upload.array("files"), async (req, res) => {
+app.post("/api/parse", upload.array("files"), async (req, res) => {
   if (!req.files || (req.files).length === 0) {
     return res.status(400).send("No files uploaded");
   }
@@ -99,7 +99,7 @@ app.post("/parse", upload.array("files"), async (req, res) => {
     message: "Files received. Processing in background.",
     files: files.map((f) => ({
       filename: f.filename,
-      readFileUrl: `/read?filename=${path.parse(f.filename).name}`,
+      readFileUrl: `/api/read?filename=${path.parse(f.filename).name}`,
     })),
   });
 });
