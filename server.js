@@ -22,7 +22,9 @@ const storage = multer.diskStorage({
 const app = express();
 const upload = multer({ storage });
 
-const CLI_PATH = path.join(__dirname, "GW2EIParser", "GuildWars2EliteInsights-CLI");
+const PARSER_PATH = path.join(__dirname, "GW2EIParser");
+const CLI_PATH = path.join(PARSER_PATH, "GuildWars2EliteInsights-CLI");
+const CLI_CONFIG_PATH = path.join(PARSER_PATH, "gw2ei.conf");
 
 app.get("/", async (req, res) => {
   res('Hello World');
@@ -38,7 +40,7 @@ app.post("/parseFile", upload.array("files"), async (req, res) => {
   for (const file of files) {
     console.log(`Processing file: ${file.path}`);
 
-    const child = spawn(CLI_PATH, [file.path]);
+    const child = spawn(CLI_PATH, ["-c", CLI_CONFIG_PATH, file.path]);
 
     child.stdout.on("data", (data) => {
       console.log(`[${file.originalname} STDOUT] ${data.toString()}`);
@@ -55,7 +57,10 @@ app.post("/parseFile", upload.array("files"), async (req, res) => {
 
   res.send({
     message: "Files received. Processing in background.",
-    files: files.map((f) => f.originalname),
+    files: files.map((f) => ({
+      filename: f.filename,
+      oFilename: f.originalname,
+    })),
   });
 });
 

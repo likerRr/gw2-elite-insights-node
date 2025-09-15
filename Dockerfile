@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y curl && \
 # Copy published build
 WORKDIR /app/GW2EIParser
 COPY --from=builder /out .
+COPY gw2ei.conf .
 
 # Copy Node server
 WORKDIR /app
