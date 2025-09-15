@@ -4,8 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "docker-build": "docker build --no-cache -t gw2-elite-insights-node .",
-    "docker-run": "docker run -p 3000:3000 gw2-elite-insights-node"
+    "dev": "docker compose up --build",
+    "dev:down": "docker compose down -v",
+    "prod": "docker compose -f docker-compose.yml up --build -d",
+    "prod:down": "docker compose -f docker-compose.yml down -v",
+    "rebuild:cli": "docker compose build --no-cache cli-builder"
   },
   "dependencies": {
     "express": "^5.1.0",

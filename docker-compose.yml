@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    container_name: gw2-app
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production

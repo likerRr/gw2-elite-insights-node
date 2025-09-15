@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    volumes:
+      - ./server.js:/app/server.js
+      - ./uploads:/app/uploads
+      - ./gw2ei.conf:/app/GW2EIParser/gw2ei.conf
+    ports:
+      - "3000:3000"
+    command: ["npx", "nodemon", "server.js"]
+
+  cli-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder

@@ -3,12 +3,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 
 WORKDIR /src
 RUN apt-get update && apt-get install -y git
-
 RUN git clone https://github.com/baaron4/GW2-Elite-Insights-Parser.git .
 RUN dotnet publish GW2EIParserCLI/GW2EIParserCLI.csproj -c Release -o /out
 
-# --- Stage 2: main app ---
-FROM mcr.microsoft.com/dotnet/runtime:8.0 AS base
+# --- Stage 2: runtime with .NET + Node ---
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
 
 RUN mkdir -p /root/.local/share /root/.config
 
@@ -16,14 +15,16 @@ RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_current.x | bash - && \
     apt-get install -y nodejs
 
-# Copy published build
+# --- Stage 3: app ---
+FROM runtime AS app
+
+# Copy .NET CLI
 WORKDIR /app/GW2EIParser
 COPY --from=builder /out .
 COPY gw2ei.conf .
 
-# Copy Node server
+# Setup Node.js server
 WORKDIR /app
-# Tmp dir for uploaded files
 RUN mkdir -p ./uploads
 COPY package*.json ./
 RUN npm ci --omit=dev
