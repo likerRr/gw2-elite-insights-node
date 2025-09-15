@@ -3,13 +3,20 @@ import multer from "multer";
 import { spawn } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs/promises";
+import { glob } from "glob";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const UPLOAD_DIR = path.resolve("/tmp/uploads/");
+const PARSER_DIR = path.join(__dirname, "../GW2EIParser");
+const CLI_PATH = path.join(PARSER_DIR, "GuildWars2EliteInsights-CLI");
+const CLI_CONFIG_PATH = path.join(PARSER_DIR, "gw2ei.conf");
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "/tmp/uploads/");
+    cb(null, UPLOAD_DIR);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -21,15 +28,44 @@ const storage = multer.diskStorage({
 const app = express();
 const upload = multer({ storage });
 
-const PARSER_PATH = path.join(__dirname, "../GW2EIParser");
-const CLI_PATH = path.join(PARSER_PATH, "GuildWars2EliteInsights-CLI");
-const CLI_CONFIG_PATH = path.join(PARSER_PATH, "gw2ei.conf");
-
 app.get("/", async (req, res) => {
-  res('Hello World');
+  res.send('Hello World');
 });
 
-app.post("/parseFile", upload.array("files"), async (req, res) => {
+app.get("/read", async (req, res) => {
+  try {
+    const { filename } = req.query;
+
+    if (!filename) {
+      return res.status(400).json({ error: "filename parameter is required" });
+    }
+
+    const pattern = path.join(UPLOAD_DIR, `${filename}_*.json`);
+    const matchingFiles = await glob(pattern);
+
+    if (matchingFiles.length === 0) {
+      console.warn(`File matching pattern "${filename}_*.json" not found`);
+
+      return res.status(404).json({ error: `File not found` });
+    }
+
+    const filePath = matchingFiles[0];
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const jsonData = JSON.parse(fileContent);
+
+    res.json(jsonData);
+  } catch (error) {
+    console.error('Error reading file:', error);
+
+    if (error instanceof SyntaxError) {
+      return res.status(400).json({ error: "Invalid JSON format in file" });
+    }
+
+    res.status(500).json({ error: "Internal server error while reading file" });
+  }
+});
+
+app.post("/parse", upload.array("files"), async (req, res) => {
   if (!req.files || (req.files).length === 0) {
     return res.status(400).send("No files uploaded");
   }

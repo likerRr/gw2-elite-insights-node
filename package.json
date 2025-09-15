@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
+    "glob": "^11.0.3",
     "multer": "^2.0.2"
   },
   "devDependencies": {
