@@ -2,7 +2,7 @@
   "name": "gw2-elite-insights-node",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.js",
+  "main": "src/server.js",
   "scripts": {
     "dev": "docker compose up --build",
     "dev:down": "docker compose down -v",

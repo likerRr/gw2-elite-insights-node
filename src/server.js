@@ -9,8 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // cb(null, "/tmp/uploads/");
-    cb(null, "/app/uploads/");
+    cb(null, "/tmp/uploads/");
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
@@ -22,7 +21,7 @@ const storage = multer.diskStorage({
 const app = express();
 const upload = multer({ storage });
 
-const PARSER_PATH = path.join(__dirname, "GW2EIParser");
+const PARSER_PATH = path.join(__dirname, "../GW2EIParser");
 const CLI_PATH = path.join(PARSER_PATH, "GuildWars2EliteInsights-CLI");
 const CLI_CONFIG_PATH = path.join(PARSER_PATH, "gw2ei.conf");
 
@@ -53,6 +52,10 @@ app.post("/parseFile", upload.array("files"), async (req, res) => {
     child.on("close", (code) => {
       console.log(`[${file.originalname}] Process exited with code ${code}`);
     });
+
+    child.on("error", (err) => {
+      console.error(`[${file.originalname}] Failed to start process: ${err}`);
+    });
   }
 
   res.send({
@@ -62,6 +65,10 @@ app.post("/parseFile", upload.array("files"), async (req, res) => {
       oFilename: f.originalname,
     })),
   });
+});
+
+app.on("error", (err) => {
+  console.error("Server error:", err);
 });
 
 app.listen(3000, () => {

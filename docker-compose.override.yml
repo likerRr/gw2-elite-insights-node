@@ -5,12 +5,15 @@ services:
       dockerfile: Dockerfile
       target: app
     volumes:
-      - ./server.js:/app/server.js
-      - ./uploads:/app/uploads
+      - ./src:/app/src
+      - ./uploads:/tmp/uploads
       - ./gw2ei.conf:/app/GW2EIParser/gw2ei.conf
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./nodemon.json:/app/nodemon.json
     ports:
       - "3000:3000"
-    command: ["npx", "nodemon", "server.js"]
+    command: ["npx", "nodemon"]
 
   cli-builder:
     build:
