@@ -2,17 +2,10 @@ import express from "express";
 import multer from "multer";
 import { spawn } from "child_process";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import { glob } from "glob";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const UPLOAD_DIR = path.resolve("/tmp/uploads/");
-const PARSER_DIR = path.join(__dirname, "../GW2EIParser");
-const CLI_PATH = path.join(PARSER_DIR, "GuildWars2EliteInsights-CLI");
-const CLI_CONFIG_PATH = path.join(PARSER_DIR, "gw2ei.conf");
+import { CLI_CONFIG_PATH, CLI_PATH, UPLOAD_DIR } from './config.js';
+import { cleanupArtifacts } from './lib/cleanupArtifacts.js';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -73,6 +66,8 @@ app.post("/parse", upload.array("files"), async (req, res) => {
   const files = req.files;
 
   for (const file of files) {
+    const { name } = path.parse(file.filename);
+
     console.log(`Processing file: ${file.path}`);
 
     const child = spawn(CLI_PATH, ["-c", CLI_CONFIG_PATH, file.path]);
@@ -85,12 +80,18 @@ app.post("/parse", upload.array("files"), async (req, res) => {
       console.error(`[${file.originalname} STDERR] ${data.toString()}`);
     });
 
-    child.on("close", (code) => {
+    child.on("close", async (code) => {
       console.log(`[${file.originalname}] Process exited with code ${code}`);
+
+      const success = code === 0;
+
+      await cleanupArtifacts(name, success);
     });
 
-    child.on("error", (err) => {
+    child.on("error", async (err) => {
       console.error(`[${file.originalname}] Failed to start process: ${err}`);
+
+      await cleanupArtifacts(name, false);
     });
   }
 
@@ -98,7 +99,7 @@ app.post("/parse", upload.array("files"), async (req, res) => {
     message: "Files received. Processing in background.",
     files: files.map((f) => ({
       filename: f.filename,
-      oFilename: f.originalname,
+      readFileUrl: `/read?filename=${path.parse(f.filename).name}`,
     })),
   });
 });
