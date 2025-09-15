@@ -4,9 +4,13 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "docker-build": "docker build --no-cache -t gw2-elite-insights-node .",
+    "docker-run": "docker run -p 3000:3000 gw2-elite-insights-node"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  },
   "devDependencies": {
     "typescript": "^5.5.3"
   },
