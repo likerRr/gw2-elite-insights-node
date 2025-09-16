@@ -24,7 +24,7 @@ COPY --from=builder /out .
 COPY gw2ei.conf .
 
 # Create upload directory
-WORKDIR /tmp/uploads
+RUN mkdir -p /tmp/uploads
 
 # Setup Node.js server
 WORKDIR /app
