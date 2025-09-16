@@ -6,6 +6,7 @@ import fs from "fs/promises";
 import { glob } from "glob";
 import { CLI_CONFIG_PATH, CLI_PATH, UPLOAD_DIR, __dirname } from './config.js';
 import { cleanupArtifacts } from './lib/cleanupArtifacts.js';
+import { parseProcessOutput } from './lib/parseProcessOutput.js';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -69,8 +70,24 @@ app.post("/api/parse", upload.array("files"), async (req, res) => {
 
   const child = spawn(CLI_PATH, ["-c", CLI_CONFIG_PATH, ...filesArguments]);
 
-  child.stdout.on("data", (data) => {
-    console.log(`[STDOUT] ${data.toString()}`);
+  child.stdout.on("data", async (data) => {
+    const message = data.toString();
+    console.log(`[STDOUT] ${message}`);
+
+    const parsedResult = parseProcessOutput(message);
+
+    if (!parsedResult) {
+      return;
+    }
+
+    if (!filesArguments.includes(parsedResult.filePath)) {
+      console.warn("File path from output does not match any input files. Skipping cleanup.");
+      return;
+    }
+
+    const fileName = path.parse(parsedResult.filePath).name;
+
+    await cleanupArtifacts(fileName, parsedResult.isSuccess);
   });
 
   child.stderr.on("data", (data) => {
@@ -79,14 +96,6 @@ app.post("/api/parse", upload.array("files"), async (req, res) => {
 
   child.on("close", async (code) => {
     console.log(`[CLOSE] Process exited with code ${code}`);
-
-    const success = code === 0;
-
-    await Promise.all(filesName.map(async f => {
-      const name = path.parse(f).name;
-
-      return cleanupArtifacts(name, success);
-    }));
   });
 
   child.on("error", async (err) => {
