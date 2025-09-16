@@ -6,6 +6,7 @@ services:
       target: app
     volumes:
       - ./src:/app/src
+      - ./public:/app/public
       - ./uploads:/tmp/uploads
       - ./gw2ei.conf:/app/GW2EIParser/gw2ei.conf
       - ./package.json:/app/package.json

@@ -4,7 +4,7 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import { glob } from "glob";
-import { CLI_CONFIG_PATH, CLI_PATH, UPLOAD_DIR } from './config.js';
+import { CLI_CONFIG_PATH, CLI_PATH, UPLOAD_DIR, __dirname } from './config.js';
 import { cleanupArtifacts } from './lib/cleanupArtifacts.js';
 
 const storage = multer.diskStorage({
@@ -21,9 +21,7 @@ const storage = multer.diskStorage({
 const app = express();
 const upload = multer({ storage });
 
-app.get("/", async (req, res) => {
-  res.send('Hello World');
-});
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get("/api/read", async (req, res) => {
   try {

@@ -29,6 +29,7 @@ RUN mkdir -p /tmp/uploads
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY src ./src
+COPY public ./public
 
 EXPOSE 3000
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GW2 Elite Insights Parser</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gw2-gold': '#D4AF37',
+                        'gw2-blue': '#1E3A8A',
+                        'gw2-dark': '#0F172A'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gw2-dark via-slate-800 to-gw2-blue min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    <span class="text-gw2-gold">GW2</span> Elite Insights Parser
+                </h1>
+                <p class="text-slate-300">Upload your .evtc/.zevtc combat log files for analysis</p>
+            </div>
+
+            <!-- Upload Form -->
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 shadow-2xl p-8">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="mb-6">
+                        <label for="files" class="block text-sm font-medium text-white mb-3">
+                            Select Combat Log Files
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="file"
+                                id="files"
+                                name="files"
+                                multiple
+                                accept=".evtc,.zevtc"
+                                class="block w-full text-sm text-slate-300 file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-gw2-gold file:text-gw2-dark hover:file:bg-yellow-400 transition-colors border border-white/30 rounded-lg bg-white/5 backdrop-blur-sm focus:ring-2 focus:ring-gw2-gold focus:border-transparent"
+                                required
+                            >
+                        </div>
+                        <p class="mt-2 text-xs text-slate-400">
+                            Supported formats: .evtc, .zevtc
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        id="submitBtn"
+                        class="w-full bg-gw2-gold hover:bg-yellow-400 text-gw2-dark font-bold py-4 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gw2-gold/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    >
+                        <span id="btnText">Parse Files</span>
+                        <span id="btnLoader" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-gw2-dark inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Response Container -->
+            <div id="responseContainer" class="mt-8 hidden">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 shadow-2xl p-6">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-gw2-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Server Response
+                    </h3>
+                    <div id="responseContent" class="text-slate-300"></div>
+                </div>
+            </div>
+
+            <!-- Error Container -->
+            <div id="errorContainer" class="mt-8 hidden">
+                <div class="bg-red-500/20 backdrop-blur-sm rounded-xl border border-red-500/30 shadow-2xl p-6">
+                    <h3 class="text-lg font-semibold text-red-200 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Error
+                    </h3>
+                    <div id="errorContent" class="text-red-200"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const responseContainer = document.getElementById('responseContainer');
+            const errorContainer = document.getElementById('errorContainer');
+            const responseContent = document.getElementById('responseContent');
+            const errorContent = document.getElementById('errorContent');
+
+            // Hide previous results
+            responseContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/parse', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.text();
+
+                if (response.ok) {
+                    let parsedResult;
+                    try {
+                        parsedResult = JSON.parse(result);
+                    } catch {
+                        parsedResult = result;
+                    }
+
+                    // Show success response
+                    responseContainer.classList.remove('hidden');
+
+                    if (typeof parsedResult === 'object') {
+                        let html = '<div class="space-y-3">';
+
+                        if (parsedResult.message) {
+                            html += `<div class="text-green-300 font-medium">${parsedResult.message}</div>`;
+                        }
+
+                        if (parsedResult.files && Array.isArray(parsedResult.files)) {
+                            html += '<div class="mt-4"><h4 class="text-white font-medium mb-2">Processed Files:</h4><ul class="space-y-2">';
+                            parsedResult.files.forEach(file => {
+                                html += `
+                                    <li class="bg-white/5 rounded-lg p-3 border border-white/10">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-300">${file.filename}</span>
+                                            <a href="${file.readFileUrl}"
+                                               target="_blank"
+                                               class="bg-gw2-gold hover:bg-yellow-400 text-gw2-dark px-3 py-1 rounded text-sm font-medium transition-colors">
+                                                View Results
+                                            </a>
+                                        </div>
+                                    </li>
+                                `;
+                            });
+                            html += '</ul></div>';
+                        }
+
+                        html += '</div>';
+                        responseContent.innerHTML = html;
+                    } else {
+                        responseContent.innerHTML = `<pre class="whitespace-pre-wrap">${result}</pre>`;
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${result}`);
+                }
+            } catch (error) {
+                // Show error response
+                errorContainer.classList.remove('hidden');
+                errorContent.innerHTML = `<pre class="whitespace-pre-wrap">${error.message}</pre>`;
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+
+                // Reset form
+                form.reset();
+            }
+        });
+
+        // File input enhancement
+        document.getElementById('files').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                const fileNames = Array.from(files).map(f => f.name).join(', ');
+                console.log(`Selected files: ${fileNames}`);
+            }
+        });
+    </script>
+</body>
+</html>
