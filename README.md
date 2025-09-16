@@ -168,54 +168,12 @@ The server API can be easily integrated with:
 - Analytics and statistics systems
 - CI/CD pipelines for automated testing
 
-### Deployment on [fly.io](https://fly.io/)
+### Production Deployment
 
-1. **[Install fly CLI](https://fly.io/docs/flyctl/install/) and login:**
-```bash
-# Install fly CLI (macOS)
-brew install flyctl
-# or
-curl -L https://fly.io/install.sh | sh
+The project is fully tested and ready for deployment on cloud platforms that support Dockerfile-based deployment, including:
 
-# Login to fly.io
-fly auth login
-```
-
-2. **Initialize and launch the application:**
-```bash
-# Launch application (creates app and deploys)
-fly launch
-
-# Or deploy to existing app
-fly deploy
-```
-
-3. **Access the deployed application:**
-```bash
-# Open in browser
-fly open
-
-# Check application status
-fly status
-
-# View logs
-fly logs
-```
-
-4. **SSH access to container:**
-```bash
-# SSH into the running container
-fly ssh console
-
-# Run commands inside the container
-fly ssh console -C "ls -la /app"
-```
-
-The fly.io deployment provides:
-- Automatic HTTPS certificates
-- Global edge locations
-- Health checks and auto-scaling
-- Easy rollbacks and version management
+- **[render.com](https://render.com/docs/docker)**
+- **[fly.io](https://fly.io/docs/languages-and-frameworks/dockerfile/)**
 
 ## Performance and Scaling
 
