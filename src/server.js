@@ -9,8 +9,14 @@ import { cleanupArtifacts } from './lib/cleanupArtifacts.js';
 import { parseProcessOutput } from './lib/parseProcessOutput.js';
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
+  async destination(req, file, cb) {
+    try {
+      await fs.mkdir(UPLOAD_DIR, { recursive: true });
+
+      cb(null, UPLOAD_DIR);
+    } catch (e) {
+      cb(e);
+    }
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
