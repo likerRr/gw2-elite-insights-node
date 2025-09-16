@@ -67,6 +67,7 @@ Get processing results in JSON format.
 ### Prerequisites
 
 - Docker
+- Minimum 256MB RAM (512MB recommended)
 
 ### Quick Start
 
