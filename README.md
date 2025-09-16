@@ -20,6 +20,22 @@ The project uses multi-stage Docker build:
 2. **Runtime environment** - .NET runtime + Node.js
 3. **Final image** - Node.js server + compiled .NET CLI (you can fork this project and change this step to use your own server platform, e.g. Python, Go, etc.)
 
+## Project Structure
+
+```
+├── src/
+│   ├── server.js          # Main Express server
+│   ├── config.js          # Application configuration
+│   └── lib/
+│       └── cleanupArtifacts.js  # File cleanup utilities
+├── public/
+│   └── index.html         # Web interface
+├── uploads/               # Temporary files (created automatically)
+├── Dockerfile             # Multi-stage Docker build
+├── docker-compose.yml     # Services configuration
+└── gw2ei.conf            # Elite Insights configuration
+```
+
 ## Server Capabilities
 
 ### HTTP API
@@ -200,22 +216,6 @@ The fly.io deployment provides:
 - Global edge locations
 - Health checks and auto-scaling
 - Easy rollbacks and version management
-
-## Project Structure
-
-```
-├── src/
-│   ├── server.js          # Main Express server
-│   ├── config.js          # Application configuration
-│   └── lib/
-│       └── cleanupArtifacts.js  # File cleanup utilities
-├── public/
-│   └── index.html         # Web interface
-├── uploads/               # Temporary files (created automatically)
-├── Dockerfile             # Multi-stage Docker build
-├── docker-compose.yml     # Services configuration
-└── gw2ei.conf            # Elite Insights configuration
-```
 
 ## Performance and Scaling
 
