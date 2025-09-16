@@ -90,13 +90,7 @@ app.post("/api/parse", upload.array("files"), async (req, res) => {
   });
 
   child.on("error", async (err) => {
-    console.error(`[ERROR] Failed to start process: ${err}`);
-
-    await Promise.all(filesName.map(async f => {
-      const name = path.parse(f).name;
-
-      return cleanupArtifacts(name, false);
-    }));
+    console.error(`[ERROR] Failed to start or stop process: ${err}`);
   });
 
   res.send({
