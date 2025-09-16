@@ -62,36 +62,42 @@ app.post("/api/parse", upload.array("files"), async (req, res) => {
   }
 
   const files = req.files;
+  const filesArguments = files.map(file => file.path);
+  const filesName = files.map(file => file.originalname);
 
-  for (const file of files) {
-    const { name } = path.parse(file.filename);
+  console.log(`Processing files: ${filesName.join(', ')}`);
 
-    console.log(`Processing file: ${file.path}`);
+  const child = spawn(CLI_PATH, ["-c", CLI_CONFIG_PATH, ...filesArguments]);
 
-    const child = spawn(CLI_PATH, ["-c", CLI_CONFIG_PATH, file.path]);
+  child.stdout.on("data", (data) => {
+    console.log(`[STDOUT] ${data.toString()}`);
+  });
 
-    child.stdout.on("data", (data) => {
-      console.log(`[${file.originalname} STDOUT] ${data.toString()}`);
-    });
+  child.stderr.on("data", (data) => {
+    console.error(`[STDERR] ${data.toString()}`);
+  });
 
-    child.stderr.on("data", (data) => {
-      console.error(`[${file.originalname} STDERR] ${data.toString()}`);
-    });
+  child.on("close", async (code) => {
+    console.log(`[CLOSE] Process exited with code ${code}`);
 
-    child.on("close", async (code) => {
-      console.log(`[${file.originalname}] Process exited with code ${code}`);
+    const success = code === 0;
 
-      const success = code === 0;
+    await Promise.all(filesName.map(async f => {
+      const name = path.parse(f).name;
 
-      await cleanupArtifacts(name, success);
-    });
+      return cleanupArtifacts(name, success);
+    }));
+  });
 
-    child.on("error", async (err) => {
-      console.error(`[${file.originalname}] Failed to start process: ${err}`);
+  child.on("error", async (err) => {
+    console.error(`[ERROR] Failed to start process: ${err}`);
 
-      await cleanupArtifacts(name, false);
-    });
-  }
+    await Promise.all(filesName.map(async f => {
+      const name = path.parse(f).name;
+
+      return cleanupArtifacts(name, false);
+    }));
+  });
 
   res.send({
     message: "Files received. Processing in background.",
