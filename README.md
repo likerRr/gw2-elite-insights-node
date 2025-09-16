@@ -174,6 +174,22 @@ The server API can be easily integrated with:
 - Possibility of horizontal scaling through load balancer
 - Support for processing multiple files simultaneously
 
+### Concurrency and Advanced Flow Control
+
+This project intentionally does not implement advanced concurrency features such as:
+- Job queuing and prioritization
+- Rate limiting and throttling
+- Concurrent processing limits
+- Complex workflow orchestration
+- Retry mechanisms with backoff strategies
+
+For production environments requiring these features, it's strictly recommended using dedicated cloud platforms like:
+- **[Inngest](https://www.inngest.com/docs/guides/flow-control)** - for event-driven workflows, job queuing, and flow control
+- Other queue management services (Redis Queue, Bull, AWS SQS, etc.)
+- API gateways for rate limiting and request management
+
+This keeps the project simple and focused on its core functionality while allowing integration with more sophisticated infrastructure when needed.
+
 ## License
 
 The project is distributed under the license specified in the LICENSE file.
