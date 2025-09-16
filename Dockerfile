@@ -23,9 +23,11 @@ WORKDIR /app/GW2EIParser
 COPY --from=builder /out .
 COPY gw2ei.conf .
 
+# Create upload directory
+WORKDIR /tmp/uploads
+
 # Setup Node.js server
 WORKDIR /app
-RUN mkdir -p /tmp/uploads
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY src ./src
