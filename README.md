@@ -2,7 +2,7 @@
 
 ## Project Description
 
-This project is a Node.js server that enables the use of [Guild Wars 2 Elite Insights Parser](https://github.com/baaron4/GW2-Elite-Insights-Parser) outside the .NET ecosystem. The main goal is to provide the ability to host Elite Insights as a web service in a Docker container on any platform.
+The goal of this project is to provide a self-hosted solution for parsing Guild Wars 2 combat logs using the [Guild Wars 2 Elite Insights Parser](https://github.com/baaron4/GW2-Elite-Insights-Parser) in a any environment on the example of a Node.js server. The project is designed to be run in a Docker container, making it easy to deploy on various platforms.
 
 ### Key Benefits
 
