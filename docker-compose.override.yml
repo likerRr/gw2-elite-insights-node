@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: app
+      pull: true
     volumes:
       - ./src:/app/src
       - ./public:/app/public
@@ -21,3 +22,4 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      pull: true
